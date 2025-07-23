@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Netflix Clone</title>
+
+  <!-- React + Babel -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: white;
+    }
+    .login-page {
+      background: url('https://assets.nflxext.com/ffe/siteui/vlv3/f595476d-94dc-47a7-a678-2b3812fc35ab/64a801a5-9353-45e4-b7c3-5f3f9748a6f1/IN-en-20230710-popsignuptwoweeks-perspective_alpha_website_small.jpg') center/cover no-repeat;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+    .overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1;
+    }
+    .login-form {
+      position: relative;
+      z-index: 2;
+      background-color: rgba(0,0,0,0.75);
+      padding: 60px 68px 40px;
+      border-radius: 4px;
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+    }
+    .login-form h1 {
+      margin-bottom: 20px;
+    }
+    .login-form input {
+      background: #333;
+      border: none;
+      color: white;
+      margin-bottom: 16px;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 4px;
+    }
+    .login-form button {
+      background-color: #e50914;
+      border: none;
+      color: white;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 4px;
+      margin-top: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .error {
+      color: #e87c03;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .navbar {
+      display: flex;
+      align-items: center;
+      padding: 20px;
+      background-color: #111;
+    }
+    .navbar img {
+      width: 100px;
+    }
+    .banner {
+      background-image: url('https://assets.nflxext.com/ffe/siteui/vlv3/93a64a5e-ae8b-4890-8415-869db282ad65/d16cf1b2-d68b-4f8f-b8c2-dfdc2e1c0e0c/IN-en-20230731-popsignuptwoweeks-perspective_alpha_website_small.jpg');
+      background-size: cover;
+      background-position: center;
+      height: 60vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 30px;
+    }
+    .banner h1 {
+      font-size: 3rem;
+    }
+    .row {
+      margin: 20px;
+    }
+    .row h2 {
+      margin-left: 20px;
+    }
+    .row-posters {
+      display: flex;
+      overflow-x: auto;
+      padding: 20px;
+    }
+    .row-posters::-webkit-scrollbar {
+      display: none;
+    }
+    .row-poster {
+      max-height: 150px;
+      margin-right: 10px;
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+    .row-poster:hover {
+      transform: scale(1.08);
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+   const genres = {
+  "Trending Now": [
+    "https://image.tmdb.org/t/p/w500/8YFL5QQVPy3AgrEQxNYVSgiPEbe.jpg",
+    "https://image.tmdb.org/t/p/w500/6agKYU5IQFpuDyUYPu39w7UCRrJ.jpg",
+    "https://image.tmdb.org/t/p/w500/ugS5FVfCI3RV0ZwZtBV3HAV75OX.jpg"
+  ],
+  "Top Rated": [
+    "https://image.tmdb.org/t/p/w500/hPea3Qy5Gd6z4kJLUruBbwAH8Rm.jpg",
+    "https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg",
+    "https://image.tmdb.org/t/p/w500/fCayJrkfRaCRCTh8GqN30f8oyQF.jpg"
+  ],
+  "Action Movies": [
+    "https://image.tmdb.org/t/p/w500/1R0aeLhGg2hWgGffS8O8zEBEfIs.jpg",
+    "https://image.tmdb.org/t/p/w500/kqjL17yufvn9OVLyXYpvtyrFfak.jpg",
+    "https://image.tmdb.org/t/p/w500/9z4jRr43JdtU66P0iy8h18OyLql.jpg"
+  ],
+  "Comedy Picks": [
+    "https://image.tmdb.org/t/p/w500/6KErczPBROQty7QoIsaa6wJYXZi.jpg",
+    "https://image.tmdb.org/t/p/w500/jxdKa1467pktAILLbfw6kZyQlbW.jpg",
+    "https://image.tmdb.org/t/p/w500/2CAL2439ZeIihfX1Hb2139CX0pW.jpg"
+  ]
+};
+
+
+    const Row = ({ title, posters }) => (
+      <div className="row">
+        <h2>{title}</h2>
+        <div className="row-posters">
+          {posters.map((src, i) => (
+            <img key={i} src={src} alt="poster" className="row-poster"/>
+          ))}
+        </div>
+      </div>
+    );
+
+    const HomePage = () => (
+      <div>
+        <div className="navbar">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png" alt="Netflix Logo" />
+        </div>
+        <div className="banner">
+          <h1>Unlimited movies, TV shows and more</h1>
+          <p>Watch anywhere. Cancel anytime.</p>
+        </div>
+        {Object.entries(genres).map(([genre, posters]) => (
+          <Row key={genre} title={genre} posters={posters}/>
+        ))}
+      </div>
+    );
+
+    const LoginPage = ({ onLogin }) => {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
+
+      const handleSubmit = () => {
+        if (!email || !password) {
+          setError("Email and password are required.");
+        } else if (!email.includes("@")) {
+          setError("Please enter a valid email.");
+        } else {
+          setError("");
+          onLogin();
+        }
+      };
+
+      return (
+        <div className="login-page">
+          <div className="overlay"></div>
+          <form className="login-form" onSubmit={e => {e.preventDefault(); handleSubmit();}}>
+            <h1>Sign In</h1>
+            {error && <div className="error">{error}</div>}
+            <input type="email" placeholder="Email or phone number" value={email} onChange={e => setEmail(e.target.value)} />
+            <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
+            <button type="submit">Sign In</button>
+          </form>
+        </div>
+      );
+    };
+
+    const App = () => {
+      const [loggedIn, setLoggedIn] = useState(false);
+      return loggedIn ? <HomePage /> : <LoginPage onLogin={() => setLoggedIn(true)} />;
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
